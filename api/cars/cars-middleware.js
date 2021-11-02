@@ -8,7 +8,10 @@ const checkCarId = (req, res, next) => {
         req.car = car;
         next();
       } else {
-        next({ status: 404, message: "car with id <car id> is not found" });
+        next({
+          status: 404,
+          message: `car with id ${req.params.id} is not found`,
+        });
       }
     })
     .catch(next);
@@ -16,11 +19,19 @@ const checkCarId = (req, res, next) => {
 
 const checkCarPayload = (req, res, next) => {
   const { vin, make, model, mileage } = req.body;
-  if (!vin || !make || !model || !mileage) {
-    next({ status: 400, message: "<field name> is missing" });
-  } else {
-    next();
+  if (!vin) {
+    next({ status: 400, message: "vin is missing" });
   }
+  if (!make) {
+    next({ status: 400, message: "make is missing" });
+  }
+  if (!model) {
+    next({ status: 400, message: "model is missing" });
+  }
+  if (!mileage) {
+    next({ status: 400, message: "mileage is missing" });
+  }
+  next();
 };
 
 const checkVinNumberValid = (req, res, next) => {
@@ -34,12 +45,12 @@ const checkVinNumberValid = (req, res, next) => {
 };
 
 const checkVinNumberUnique = async (req, res, next) => {
-  const cars = await cars.getAll();
+  const cars = await Car.getAll();
   const vinMatches = cars.filter((car) => {
     return car.vin === req.body.vin.trim();
   });
   if (vinMatches.length >= 1) {
-    next({ status: 400, message: "vin <vin number> already exists" });
+    next({ status: 400, message: `vin ${req.body.vin} already exists` });
   }
   next();
 };

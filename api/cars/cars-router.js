@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const Car = require("./cars-model");
 const {
+  //eslint-disable-next-line
   checkCarId,
   checkCarPayload,
   checkVinNumberValid,
@@ -9,11 +10,15 @@ const {
 
 router.get("/", async (req, res, next) => {
   try {
-    const cars = Car.getAll();
-    res.status(200).json({ cars });
+    const cars = await Car.getAll();
+    res.status(200).json(cars);
   } catch (er) {
-    next();
+    next(er);
   }
+});
+
+router.get("/:id", checkCarId, (req, res) => {
+  res.status(200).json(req.car);
 });
 
 router.post(
@@ -22,18 +27,20 @@ router.post(
   checkVinNumberValid,
   checkVinNumberUnique,
   async (req, res, next) => {
+    console.log("ham");
     try {
-      const newCar = await Car.create();
+      const newCar = await Car.create(req.body);
       res.status(200).json(newCar);
     } catch (er) {
-      next();
+      next(er);
     }
   }
 );
 
+//eslint-disable-next-line
 router.use((err, req, res, next) => {
   console.log(err.message);
-  res.status(err.status || 500).json(err);
+  res.status(err.status || 500).json({ message: err.message });
 });
 
 module.exports = router;
